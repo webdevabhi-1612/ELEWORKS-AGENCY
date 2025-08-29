@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Meeting - Let's Connect</title>
+    <link rel="stylesheet" href="booking.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="site-header">
+        <nav class="nav">
+            <div class="logo">
+                <a href="index.html">LOGO</a>
+            </div>
+            <div class="nav-links">
+        <a href="index.html">HOME</a>
+        <a href="services.html">SERVICES</a>
+        <a href="Booking.html">BOOK A PROJECT</a>
+            </div>
+            <a href="booking-simple.html" class="btn btn-primary">
+                Book Meeting
+                <span class="icon-arrow">→</span>
+            </a>
+        </nav>
+    </header>
+
+    <!-- Main Booking Section -->
+    <section class="booking-section">
+        <div class="booking-container">
+            <!-- Left Side - Info -->
+            <div class="booking-info">
+                <div class="info-header">
+                    <div class="status-badge">
+                        <div class="status-dot"></div>
+                        <span>Available for new projects</span>
+                    </div>
+                    <h1>Let's Discuss Your <span class="gradient-text">Next Project</span></h1>
+                    <p class="info-description">
+                        Ready to bring your ideas to life? Fill out the form and I'll get back to you within 24 hours 
+                        to schedule a free consultation call.
+                    </p>
+                </div>
+
+                <div class="info-features">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Quick Response</h3>
+                            <p>Get a reply within 24 hours</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Free Consultation</h3>
+                            <p>30-minute strategy call at no cost</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Expert Guidance</h3>
+                            <p>Professional advice tailored to your needs</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-alternatives">
+                    <h4>Prefer to reach out directly?</h4>
+                    <div class="contact-methods">
+                        <a href="mailto:hello@yourcompany.com" class="contact-method">
+                            <i class="fas fa-envelope"></i>
+                            hello@yourcompany.com
+                        </a>
+                        <a href="tel:+1234567890" class="contact-method">
+                            <i class="fas fa-phone"></i>
+                            +1 (234) 567-890
+                        </a>
+                        <a href="https://calendly.com/yourname" class="contact-method" target="_blank">
+                            <i class="fas fa-calendar"></i>
+                            Book directly on Calendly
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Form -->
+            <div class="booking-form">
+                <form id="contactForm" class="contact-form">
+                    <div class="form-header">
+                        <h2>Let's Get Started</h2>
+                        <p>Tell me about your project and I'll reach out soon</p>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName" class="form-label">Full Name *</label>
+                            <input type="text" id="fullName" name="fullName" class="form-control" required>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group half">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="form-control">
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="company" class="form-label">Company</label>
+                            <input type="text" id="company" name="company" class="form-control">
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group half">
+                            <label for="budget" class="form-label">Budget Range</label>
+                            <select id="budget" name="budget" class="form-control">
+                                <option value="">Select budget</option>
+                                <option value="under-5k">Under $5,000</option>
+                                <option value="5k-15k">$5,000 - $15,000</option>
+                                <option value="15k-30k">$15,000 - $30,000</option>
+                                <option value="30k-plus">$30,000+</option>
+                                <option value="discuss">Let's discuss</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Service Interest -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">What service are you interested in? *</label>
+                            <div class="service-options">
+                                <label class="service-option">
+                                    <input type="radio" name="serviceType" value="web-development" required>
+                                    <span class="option-content">
+                                        <i class="fas fa-code"></i>
+                                        Web Development
+                                    </span>
+                                </label>
+                                <label class="service-option">
+                                    <input type="radio" name="serviceType" value="mobile-app">
+                                    <span class="option-content">
+                                        <i class="fas fa-mobile-alt"></i>
+                                        Mobile App
+                                    </span>
+                                </label>
+                                <label class="service-option">
+                                    <input type="radio" name="serviceType" value="ui-ux-design">
+                                    <span class="option-content">
+                                        <i class="fas fa-palette"></i>
+                                        UI/UX Design
+                                    </span>
+                                </label>
+                                <label class="service-option">
+                                    <input type="radio" name="serviceType" value="branding">
+                                    <span class="option-content">
+                                        <i class="fas fa-paint-brush"></i>
+                                        Branding
+                                    </span>
+                                </label>
+                                <label class="service-option">
+                                    <input type="radio" name="serviceType" value="consulting">
+                                    <span class="option-content">
+                                        <i class="fas fa-lightbulb"></i>
+                                        Consulting
+                                    </span>
+                                </label>
+                                <label class="service-option">
+                                    <input type="radio" name="serviceType" value="other">
+                                    <span class="option-content">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                        Other
+                                    </span>
+                                </label>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Project Details -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="projectDescription" class="form-label">Project Description *</label>
+                            <textarea id="projectDescription" name="projectDescription" class="form-control" rows="4" 
+                                placeholder="Tell me about your project, goals, and timeline..." required></textarea>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="timeline" class="form-label">When do you need this completed?</label>
+                            <select id="timeline" name="timeline" class="form-control">
+                                <option value="">Select timeline</option>
+                                <option value="asap">ASAP</option>
+                                <option value="1-month">Within 1 month</option>
+                                <option value="1-3-months">1-3 months</option>
+                                <option value="3-6-months">3-6 months</option>
+                                <option value="flexible">Flexible timeline</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- How they found you -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="referralSource" class="form-label">How did you hear about me?</label>
+                            <select id="referralSource" name="referralSource" class="form-control">
+                                <option value="">Select source</option>
+                                <option value="google">Google Search</option>
+                                <option value="social-media">Social Media</option>
+                                <option value="referral">Referral</option>
+                                <option value="linkedin">LinkedIn</option>
+                                <option value="portfolio">Portfolio Website</option>
+                                <option value="networking">Networking Event</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-row">
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-text">Send Message</span>
+                            <div class="btn-loader">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <div class="form-footer">
+                        <p><i class="fas fa-shield-alt"></i> Your information is secure and will never be shared with third parties.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Message Sent Successfully!</h2>
+            <p>Thanks for reaching out! I'll review your message and get back to you within 24 hours with next steps.</p>
+            <div class="success-actions">
+                <button class="btn btn-primary" onclick="closeSuccessModal()">
+                    Perfect!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="booking.js"></script>
+</body>
+</html>

@@ -1,785 +1,439 @@
-// subtle hover nudge for all .btn arrows
-document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('mouseenter', () => btn.querySelector('.icon-arrow')?.style.setProperty('transform', 'translateX(6px)'));
-    btn.addEventListener('mouseleave', () => btn.querySelector('.icon-arrow')?.style.setProperty('transform', 'translateX(0)'));
-});
+// Booking Form Multi-Step Handler
 
-// light card tilt to mimic motion in modern hero designs
-const tilt = (el, max = 6) => {
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const onMove = (e) => {
-        const dx = (e.clientX - cx) / (rect.width / 2);
-        const dy = (e.clientY - cy) / (rect.height / 2);
-        el.style.transform = `rotateX(${(-dy * max).toFixed(2)}deg) rotateY(${(dx * max).toFixed(2)}deg) translateZ(0)`;
-    };
-    const reset = () => el.style.transform = 'translateZ(0)';
-    el.addEventListener('mousemove', onMove);
-    el.addEventListener('mouseleave', reset);
-};
-document.querySelectorAll('.card').forEach(c => tilt(c));
+const lenis = new Lenis()
 
+// Animation frame loop
+function raf(time) {
+  lenis.raf(time)
+  requestAnimationFrame(raf)
+}
 
-// STATS COUNTER - FIXED VERSION WITH VISIBLE BOXES
-class StatsCounter {
+requestAnimationFrame(raf)
+
+class BookingFormHandler {
   constructor() {
-    this.counters = document.querySelectorAll('.counter');
-    this.statsSection = document.querySelector('.stats-section');
-    this.statBoxes = document.querySelectorAll('.stat-box');
-    this.hasAnimated = false;
-    this.isAnimating = false;
-    
-    if (!this.counters.length || !this.statsSection) return;
-    
-    this.initializeElements();
-    this.init();
+    this.currentStep = 1;
+    this.totalSteps = 4;
+    this.formData = {};
+
+    // Get DOM elements
+    this.form = document.getElementById('bookingForm');
+    this.steps = document.querySelectorAll('.form-step');
+    this.progressSteps = document.querySelectorAll('.progress-step');
+    this.nextButtons = document.querySelectorAll('.next-step');
+    this.prevButtons = document.querySelectorAll('.prev-step');
+    this.submitButton = document.querySelector('.submit-booking');
+
+    if (this.form) {
+      this.init();
+    }
   }
-  
-  initializeElements() {
-    // Ensure all elements are fully visible from the start
-    this.counters.forEach(counter => {
-      counter.textContent = '0';
-      counter.style.opacity = '1';
-      counter.style.visibility = 'visible';
-    });
-    
-    this.statBoxes.forEach(box => {
-      box.style.opacity = '1';
-      box.style.visibility = 'visible';
-      box.style.display = 'block';
-    });
-  }
-  
+
   init() {
-    if ('IntersectionObserver' in window) {
-      this.setupIntersectionObserver();
-    } else {
-      this.setupScrollListener();
-    }
-  }
-  
-  setupIntersectionObserver() {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !this.hasAnimated) {
-          this.startAnimation();
-        }
-      });
-    }, {
-      threshold: 0.3,
-      rootMargin: '0px 0px -20% 0px'
-    });
-    
-    observer.observe(this.statsSection);
-  }
-  
-  setupScrollListener() {
-    const checkScroll = () => {
-      if (this.hasAnimated) return;
-      
-      const rect = this.statsSection.getBoundingClientRect();
-      const isVisible = rect.top < window.innerHeight * 0.8;
-      
-      if (isVisible) {
-        this.startAnimation();
-        window.removeEventListener('scroll', checkScroll);
-      }
-    };
-    
-    window.addEventListener('scroll', checkScroll);
-    checkScroll();
-  }
-  
-  startAnimation() {
-    if (this.hasAnimated || this.isAnimating) return;
-    
-    this.hasAnimated = true;
-    this.isAnimating = true;
-    
-    // Ensure all boxes are visible before starting
-    this.statBoxes.forEach(box => {
-      box.style.opacity = '1';
-      box.style.visibility = 'visible';
-      box.style.transform = 'translateY(0)';
-    });
-    
-    // Reset all counters to 0 and make them visible
-    this.counters.forEach(counter => {
-      counter.textContent = '0';
-      counter.style.opacity = '1';
-      counter.style.visibility = 'visible';
-    });
-    
-    // Start animations with staggered timing
-    this.counters.forEach((counter, index) => {
-      setTimeout(() => {
-        this.animateCounter(counter, index);
-      }, index * 200);
-    });
-  }
-  
-  animateCounter(element, index) {
-    const target = parseInt(element.getAttribute('data-target'));
-    const duration = 2500;
-    const startTime = performance.now();
-    const statBox = element.closest('.stat-box');
-    
-    // Ensure visibility throughout animation
-    element.style.opacity = '1';
-    element.style.visibility = 'visible';
-    if (statBox) {
-      statBox.style.opacity = '1';
-      statBox.style.visibility = 'visible';
-    }
-    
-    // Add animation classes
-    element.classList.add('counting');
-    if (statBox) {
-      statBox.classList.add('animating');
-    }
-    
-    const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Smooth easing function
-      const easedProgress = progress < 0.5 
-        ? 4 * progress * progress * progress 
-        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-      
-      const current = Math.round(easedProgress * target);
-      
-      // Update number and ensure visibility
-      element.textContent = current;
-      element.style.opacity = '1';
-      element.style.visibility = 'visible';
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Animation complete
-        element.textContent = target;
-        element.classList.remove('counting');
-        if (statBox) {
-          statBox.classList.remove('animating');
-        }
-        
-        // Final visibility check
-        element.style.opacity = '1';
-        element.style.visibility = 'visible';
-        
-        this.checkAnimationComplete();
-      }
-    };
-    
-    requestAnimationFrame(animate);
-  }
-  
-  checkAnimationComplete() {
-    const allCompleted = Array.from(this.counters).every(counter => 
-      !counter.classList.contains('counting')
-    );
-    
-    if (allCompleted) {
-      this.isAnimating = false;
-      this.onAnimationComplete();
-    }
-  }
-  
-  onAnimationComplete() {
-    console.log('Stats animation completed');
-    
-    // Ensure all elements remain visible
-    this.counters.forEach(counter => {
-      counter.style.opacity = '1';
-      counter.style.visibility = 'visible';
-    });
-    
-    this.statBoxes.forEach(box => {
-      box.style.opacity = '1';
-      box.style.visibility = 'visible';
-    });
-  }
-  
-  reset() {
-    this.hasAnimated = false;
-    this.isAnimating = false;
-    
-    this.counters.forEach(counter => {
-      counter.textContent = '0';
-      counter.style.opacity = '1';
-      counter.style.visibility = 'visible';
-      counter.classList.remove('counting');
-    });
-    
-    this.statBoxes.forEach(box => {
-      box.style.opacity = '1';
-      box.style.visibility = 'visible';
-      box.classList.remove('animating');
-    });
-  }
-}
-
-// BUTTON EFFECTS
-function initButtonEffects() {
-  document.querySelectorAll('.btn').forEach(btn => {
-    const arrow = btn.querySelector('.icon-arrow');
-    if (arrow) {
-      btn.addEventListener('mouseenter', () => {
-        arrow.style.transform = 'translateX(6px)';
-      });
-      btn.addEventListener('mouseleave', () => {
-        arrow.style.transform = 'translateX(0)';
-      });
-    }
-  });
-  
-  const consultBtn = document.querySelector('.btn-consult');
-  if (consultBtn) {
-    consultBtn.addEventListener('mouseenter', () => {
-      consultBtn.style.transform = 'translateY(-3px)';
-    });
-    consultBtn.addEventListener('mouseleave', () => {
-      consultBtn.style.transform = '';
-    });
-  }
-}
-
-// CARD EFFECTS
-function initCardEffects() {
-  document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = (y - centerY) / 8;
-      const rotateY = (centerX - x) / 8;
-      
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    });
-    
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-    });
-  });
-}
-
-// INITIALIZATION
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const statsCounter = new StatsCounter();
-    initButtonEffects();
-    initCardEffects();
-    
-    window.resetStats = () => {
-      if (statsCounter) {
-        statsCounter.reset();
-      }
-    };
-    
-    console.log('Stats section fully initialized');
-  }, 100);
-});
-
-// Additional safety check on window load
-window.addEventListener('load', () => {
-  const counters = document.querySelectorAll('.counter');
-  const boxes = document.querySelectorAll('.stat-box');
-  
-  counters.forEach(counter => {
-    if (!counter.textContent || counter.textContent === '') {
-      counter.textContent = '0';
-    }
-    counter.style.opacity = '1';
-    counter.style.visibility = 'visible';
-  });
-  
-  boxes.forEach(box => {
-    box.style.opacity = '1';
-    box.style.visibility = 'visible';
-    box.style.display = 'block';
-  });
-});
-
-// ENHANCED INTERACTIVE GRADIENT CARD
-class EnhancedInteractiveCard {
-  constructor() {
-    this.card = document.getElementById('gradientCard');
-    this.floatingCircle = document.getElementById('floatingCircle');
-    this.rotatingText = document.querySelector('.rotating-text-container');
-    this.avatarCircle = document.querySelector('.avatar-circle');
-    
-    this.isHovered = false;
-    this.mouseX = 0;
-    this.mouseY = 0;
-    
-    if (!this.card) return;
-    
-    this.init();
-  }
-  
-  init() {
+    console.log('Booking form initialized');
     this.setupEventListeners();
-    this.startAmbientAnimation();
+    this.setDateRestrictions();
+    this.showStep(this.currentStep);
   }
-  
+
   setupEventListeners() {
-    this.card.addEventListener('mouseenter', (e) => this.onMouseEnter(e));
-    this.card.addEventListener('mouseleave', (e) => this.onMouseLeave(e));
-    this.card.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    this.card.addEventListener('click', (e) => this.onCardClick(e));
-  }
-  
-  onMouseEnter(e) {
-    this.isHovered = true;
-    this.card.style.cursor = 'pointer';
-    this.triggerHoverEffects();
-  }
-  
-  onMouseLeave(e) {
-    this.isHovered = false;
-    this.card.style.cursor = 'default';
-    this.resetHoverEffects();
-  }
-  
-  onMouseMove(e) {
-    if (!this.isHovered) return;
-    
-    const rect = this.card.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    this.mouseX = (e.clientX - centerX) / (rect.width / 2);
-    this.mouseY = (e.clientY - centerY) / (rect.height / 2);
-    
-    this.updateCirclePosition();
-  }
-  
-  updateCirclePosition() {
-    if (!this.floatingCircle) return;
-    
-    const moveX = this.mouseX * 8;
-    const moveY = this.mouseY * 8;
-    
-    this.floatingCircle.style.transform = `
-      translateX(calc(-50% + ${moveX}px)) 
-      translateY(calc(-10px + ${moveY}px)) 
-      scale(1.1)
-    `;
-  }
-  
-  triggerHoverEffects() {
-    if (this.rotatingText) {
-      this.rotatingText.style.animationDuration = '6s';
-    }
-    
-    this.createSparkles();
-    
-    const gradientBg = this.card.querySelector('.gradient-bg');
-    if (gradientBg) {
-      gradientBg.style.animationDuration = '2s';
-    }
-  }
-  
-  resetHoverEffects() {
-    if (this.rotatingText) {
-      this.rotatingText.style.animationDuration = '15s';
-    }
-    
-    if (this.floatingCircle) {
-      this.floatingCircle.style.transform = 'translateX(-50%)';
-    }
-    
-    const gradientBg = this.card.querySelector('.gradient-bg');
-    if (gradientBg) {
-      gradientBg.style.animationDuration = '8s';
-    }
-    
-    this.removeSparkles();
-  }
-  
-  createSparkles() {
-    for (let i = 0; i < 6; i++) {
-      setTimeout(() => {
-        this.createSingleSparkle();
-      }, i * 200);
-    }
-  }
-  
-  createSingleSparkle() {
-    const sparkle = document.createElement('div');
-    sparkle.className = 'sparkle';
-    
-    const size = Math.random() * 4 + 2;
-    const x = Math.random() * 100;
-    const y = Math.random() * 100;
-    const duration = Math.random() * 2 + 1;
-    
-    sparkle.style.cssText = `
-      position: absolute;
-      left: ${x}%;
-      top: ${y}%;
-      width: ${size}px;
-      height: ${size}px;
-      background: radial-gradient(circle, #DCF986 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: sparkleFloat ${duration}s ease-out forwards;
-      z-index: 15;
-    `;
-    
-    // Add sparkle animation styles if not present
-    if (!document.querySelector('#sparkle-styles')) {
-      const style = document.createElement('style');
-      style.id = 'sparkle-styles';
-      style.textContent = `
-        @keyframes sparkleFloat {
-          0% {
-            opacity: 0;
-            transform: translateY(0) scale(0);
-          }
-          50% {
-            opacity: 1;
-            transform: translateY(-20px) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-40px) scale(0);
-          }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
-    this.card.appendChild(sparkle);
-    
-    setTimeout(() => {
-      if (sparkle.parentNode) {
-        sparkle.parentNode.removeChild(sparkle);
-      }
-    }, duration * 1000);
-  }
-  
-  removeSparkles() {
-    const sparkles = this.card.querySelectorAll('.sparkle');
-    sparkles.forEach(sparkle => {
-      sparkle.style.opacity = '0';
-      setTimeout(() => {
-        if (sparkle.parentNode) {
-          sparkle.parentNode.removeChild(sparkle);
-        }
-      }, 300);
-    });
-  }
-  
-  onCardClick(e) {
-    const ripple = document.createElement('div');
-    const rect = this.card.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height) * 2;
-    const x = e.clientX - rect.left - size / 2;
-    const y = e.clientY - rect.top - size / 2;
-    
-    ripple.style.cssText = `
-      position: absolute;
-      left: ${x}px;
-      top: ${y}px;
-      width: ${size}px;
-      height: ${size}px;
-      background: radial-gradient(circle, rgba(220, 249, 134, 0.3) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: rippleEffect 0.8s ease-out forwards;
-      z-index: 5;
-    `;
-    
-    if (!document.querySelector('#ripple-styles')) {
-      const style = document.createElement('style');
-      style.id = 'ripple-styles';
-      style.textContent = `
-        @keyframes rippleEffect {
-          0% {
-            transform: scale(0);
-            opacity: 0.6;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 0;
-          }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
-    this.card.appendChild(ripple);
-    
-    setTimeout(() => {
-      if (ripple.parentNode) {
-        ripple.parentNode.removeChild(ripple);
-      }
-    }, 800);
-  }
-  
-  startAmbientAnimation() {
-    setInterval(() => {
-      if (!this.isHovered && this.avatarCircle) {
-        this.avatarCircle.style.boxShadow = `
-          0 4px 20px rgba(0, 0, 0, 0.4),
-          0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-          0 0 ${Math.random() * 20 + 10}px rgba(94, 169, 119, ${Math.random() * 0.2 + 0.1})
-        `;
-      }
-    }, 3000);
-  }
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  new EnhancedInteractiveCard();
-});
-
-// MEETING BOOKING FORM FUNCTIONALITY
-class MeetingBookingForm {
-  constructor() {
-    this.form = document.getElementById('projectForm');
-    this.submitBtn = this.form?.querySelector('.submit-enquiry-btn');
-    
-    if (this.form) {
-      this.init();
-    }
-  }
-  
-  init() {
-    this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
-    this.setupFormAnimations();
-    this.setupInputValidation();
-  }
-  
-  handleFormSubmit(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this.form);
-    const submissionData = Object.fromEntries(formData.entries());
-    
-    this.showLoadingState();
-    
-    // Simulate form submission (replace with your actual API call)
-    setTimeout(() => {
-      console.log('Form submitted:', submissionData);
-      this.showSuccessState();
-      this.form.reset();
-    }, 2000);
-  }
-  
-  showLoadingState() {
-    const btnText = this.submitBtn.querySelector('span');
-    const loader = this.submitBtn.querySelector('.submit-loader');
-    
-    this.submitBtn.disabled = true;
-    btnText.textContent = 'Submitting...';
-    loader.style.display = 'block';
-    this.submitBtn.style.opacity = '0.7';
-  }
-  
-  showSuccessState() {
-    const btnText = this.submitBtn.querySelector('span');
-    const loader = this.submitBtn.querySelector('.submit-loader');
-    
-    btnText.textContent = 'Message sent!';
-    loader.style.display = 'none';
-    this.submitBtn.style.background = '#5EA977';
-    
-    setTimeout(() => {
-      this.resetSubmitButton();
-    }, 3000);
-  }
-  
-  resetSubmitButton() {
-    const btnText = this.submitBtn.querySelector('span');
-    
-    this.submitBtn.disabled = false;
-    btnText.textContent = 'Submit enquiry';
-    this.submitBtn.style.opacity = '1';
-  }
-  
-  setupFormAnimations() {
-    // Animate form elements on scroll
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
+    // Next step buttons
+    this.nextButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.handleNext();
       });
     });
-    
-    const inputGroups = this.form.querySelectorAll('.input-group');
-    inputGroups.forEach((group, index) => {
-      group.style.opacity = '0';
-      group.style.transform = 'translateY(20px)';
-      group.style.transition = `all 0.6s ease ${index * 0.1}s`;
-      observer.observe(group);
+
+    // Previous step buttons
+    this.prevButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.handlePrevious();
+      });
     });
-  }
-  
-  setupInputValidation() {
+
+    // Form submission
+    this.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleSubmit();
+    });
+
+    // Real-time validation and summary update
+    this.form.addEventListener('input', () => {
+      this.updateSummary();
+    });
+
+    this.form.addEventListener('change', () => {
+      this.updateSummary();
+    });
+
+    // Focus event handlers
     const inputs = this.form.querySelectorAll('input, select, textarea');
-    
     inputs.forEach(input => {
-      input.addEventListener('blur', () => {
-        this.validateInput(input);
-      });
-      
       input.addEventListener('focus', () => {
-        input.style.borderColor = '#5EA977';
+        this.clearError(input);
       });
     });
   }
-  
-  validateInput(input) {
-    if (input.hasAttribute('required') && !input.value.trim()) {
-      input.style.borderColor = '#ff6b6b';
-      input.style.boxShadow = '0 0 0 3px rgba(255, 107, 107, 0.1)';
-    } else if (input.type === 'email' && input.value && !this.isValidEmail(input.value)) {
-      input.style.borderColor = '#ff6b6b';
-      input.style.boxShadow = '0 0 0 3px rgba(255, 107, 107, 0.1)';
+
+  setDateRestrictions() {
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 3);
+
+    const minDateStr = tomorrow.toISOString().split('T')[0];
+    const maxDateStr = maxDate.toISOString().split('T')[0];
+
+    dateInputs.forEach(input => {
+      input.min = minDateStr;
+      input.max = maxDateStr;
+    });
+  }
+
+  handleNext() {
+    console.log(`Attempting to go to step ${this.currentStep + 1}`);
+
+    if (this.validateCurrentStep()) {
+      if (this.currentStep < this.totalSteps) {
+        this.currentStep++;
+        this.showStep(this.currentStep);
+        this.updateProgressIndicator();
+        this.scrollToTop();
+        this.updateSummary();
+        console.log(`Moved to step ${this.currentStep}`);
+      }
     } else {
-      input.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-      input.style.boxShadow = 'none';
+      console.log('Validation failed for current step');
     }
   }
-  
-  isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-}
 
-// Initialize when DOM loads (add this to your existing DOMContentLoaded event)
-document.addEventListener('DOMContentLoaded', () => {
-  // Your existing initialization code...
-  
-  // Add the meeting booking form
-  new MeetingBookingForm();
-});
-
-// NEWSLETTER SUBSCRIPTION FUNCTIONALITY
-class NewsletterForm {
-  constructor() {
-    this.form = document.getElementById('newsletterForm');
-    this.emailInput = document.getElementById('newsletter-email');
-    this.submitBtn = this.form?.querySelector('.newsletter-btn');
-    
-    if (this.form) {
-      this.init();
+  handlePrevious() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.showStep(this.currentStep);
+      this.updateProgressIndicator();
+      this.scrollToTop();
+      console.log(`Moved back to step ${this.currentStep}`);
     }
   }
-  
-  init() {
-    this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-    this.setupInputValidation();
+
+  showStep(stepNumber) {
+    // Hide all steps
+    this.steps.forEach(step => {
+      step.classList.remove('active');
+    });
+
+    // Show current step
+    const currentStep = document.querySelector(`[data-step="${stepNumber}"]`);
+    if (currentStep) {
+      currentStep.classList.add('active');
+    }
   }
-  
-  handleSubmit(e) {
-    e.preventDefault();
-    
-    const email = this.emailInput.value.trim();
-    
-    if (!this.isValidEmail(email)) {
-      this.showError('Please enter a valid email address');
+
+  updateProgressIndicator() {
+    this.progressSteps.forEach((step, index) => {
+      const stepNumber = index + 1;
+
+      // Remove all classes first
+      step.classList.remove('active', 'completed');
+
+      if (stepNumber < this.currentStep) {
+        step.classList.add('completed');
+      } else if (stepNumber === this.currentStep) {
+        step.classList.add('active');
+      }
+    });
+  }
+
+  validateCurrentStep() {
+    const currentStepElement = document.querySelector(`[data-step="${this.currentStep}"]`);
+    let isValid = true;
+
+    // Clear previous errors
+    currentStepElement.querySelectorAll('.error-message').forEach(el => {
+      el.textContent = '';
+    });
+
+    // Validate required inputs
+    const requiredInputs = currentStepElement.querySelectorAll('[required]');
+    requiredInputs.forEach(input => {
+      if (!this.validateInput(input)) {
+        isValid = false;
+      }
+    });
+
+    // Step-specific validations
+    if (this.currentStep === 2) {
+      // Validate project types
+      const selectedTypes = currentStepElement.querySelectorAll('input[name="projectType"]:checked');
+      if (selectedTypes.length === 0) {
+        const errorEl = currentStepElement.querySelector('.checkbox-group + .error-message');
+        if (errorEl) {
+          errorEl.textContent = 'Please select at least one project type';
+        }
+        isValid = false;
+      }
+    }
+
+    if (this.currentStep === 3) {
+      // Validate meeting type
+      const selectedMeetingType = currentStepElement.querySelector('input[name="meetingType"]:checked');
+      if (!selectedMeetingType) {
+        const errorEl = currentStepElement.querySelector('.radio-group + .error-message');
+        if (errorEl) {
+          errorEl.textContent = 'Please select a meeting format';
+        }
+        isValid = false;
+      }
+    }
+
+    if (this.currentStep === 4) {
+      // Validate terms acceptance
+      const termsCheckbox = currentStepElement.querySelector('input[name="terms"]');
+      if (!termsCheckbox.checked) {
+        const errorEl = termsCheckbox.closest('.form-group').querySelector('.error-message');
+        if (errorEl) {
+          errorEl.textContent = 'You must agree to the terms and conditions';
+        }
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
+  validateInput(input) {
+    const errorEl = input.closest('.form-group').querySelector('.error-message');
+    let isValid = true;
+
+    // Clear previous error
+    if (errorEl) {
+      errorEl.textContent = '';
+    }
+    input.classList.remove('error');
+
+    // Required field validation
+    if (input.hasAttribute('required') && !input.value.trim()) {
+      this.showError(input, 'This field is required');
+      isValid = false;
+    }
+
+    // Email validation
+    if (input.type === 'email' && input.value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(input.value)) {
+        this.showError(input, 'Please enter a valid email address');
+        isValid = false;
+      }
+    }
+
+    // Phone validation
+    if (input.type === 'tel' && input.value) {
+      const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
+      if (!phoneRegex.test(input.value.replace(/\s/g, ''))) {
+        this.showError(input, 'Please enter a valid phone number');
+        isValid = false;
+      }
+    }
+
+    // Date validation
+    if (input.type === 'date' && input.value) {
+      const selectedDate = new Date(input.value);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      if (selectedDate < tomorrow) {
+        this.showError(input, 'Please select a future date');
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
+  showError(input, message) {
+    const errorEl = input.closest('.form-group').querySelector('.error-message');
+    if (errorEl) {
+      errorEl.textContent = message;
+    }
+    input.classList.add('error');
+  }
+
+  clearError(input) {
+    const errorEl = input.closest('.form-group').querySelector('.error-message');
+    if (errorEl) {
+      errorEl.textContent = '';
+    }
+    input.classList.remove('error');
+  }
+
+  updateSummary() {
+    if (this.currentStep === 4) {
+      // Update booking summary
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const email = document.getElementById('email').value;
+      const company = document.getElementById('company').value;
+      const preferredDate = document.getElementById('preferredDate').value;
+      const preferredTime = document.getElementById('preferredTime').value;
+
+      // Get selected project types
+      const selectedTypes = Array.from(document.querySelectorAll('input[name="projectType"]:checked'))
+        .map(input => input.nextElementSibling.nextElementSibling.querySelector('span').textContent);
+
+      // Get selected meeting type
+      const selectedMeetingType = document.querySelector('input[name="meetingType"]:checked');
+      const meetingTypeText = selectedMeetingType ?
+        selectedMeetingType.nextElementSibling.nextElementSibling.querySelector('strong').textContent : '';
+
+      // Update summary display
+      document.getElementById('summaryName').textContent =
+        firstName && lastName ? `${firstName} ${lastName}` : '-';
+      document.getElementById('summaryEmail').textContent = email || '-';
+      document.getElementById('summaryCompany').textContent = company || 'Individual';
+      document.getElementById('summaryProject').textContent =
+        selectedTypes.length > 0 ? selectedTypes.join(', ') : '-';
+      document.getElementById('summaryDateTime').textContent =
+        preferredDate && preferredTime ? `${preferredDate} at ${this.formatTime(preferredTime)}` : '-';
+      document.getElementById('summaryMeetingType').textContent = meetingTypeText || '-';
+    }
+  }
+
+  formatTime(time) {
+    if (!time) return '';
+    const [hours, minutes] = time.split(':');
+    const hour12 = hours % 12 || 12;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  }
+
+  async handleSubmit() {
+    if (!this.validateCurrentStep()) {
       return;
     }
-    
-    this.showLoading();
-    
-    // Simulate API call - replace with your actual newsletter service
-    setTimeout(() => {
-      console.log('Newsletter subscription:', email);
-      this.showSuccess();
-      this.form.reset();
-    }, 1500);
+
+    // Show loading state
+    this.submitButton.classList.add('loading');
+    this.submitButton.disabled = true;
+
+    try {
+      // Collect form data
+      const formData = this.collectFormData();
+
+      // Simulate API call
+      await this.simulateSubmission(formData);
+
+      // Show success modal
+      this.showSuccessModal();
+
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('There was an error submitting your booking. Please try again.');
+    } finally {
+      // Reset button state
+      this.submitButton.classList.remove('loading');
+      this.submitButton.disabled = false;
+    }
   }
-  
-  showLoading() {
-    this.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    this.submitBtn.disabled = true;
-  }
-  
-  showSuccess() {
-    this.submitBtn.innerHTML = '<i class="fas fa-check"></i>';
-    this.submitBtn.style.background = '#5EA977';
-    
-    setTimeout(() => {
-      this.resetButton();
-    }, 2000);
-  }
-  
-  showError(message) {
-    this.emailInput.style.borderColor = '#ff6b6b';
-    
-    // Create error tooltip
-    const tooltip = document.createElement('div');
-    tooltip.textContent = message;
-    tooltip.style.cssText = `
-      position: absolute;
-      top: -40px;
-      left: 0;
-      background: #ff6b6b;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      white-space: nowrap;
-      z-index: 1000;
-    `;
-    
-    this.form.style.position = 'relative';
-    this.form.appendChild(tooltip);
-    
-    setTimeout(() => {
-      tooltip.remove();
-      this.emailInput.style.borderColor = '';
-    }, 3000);
-  }
-  
-  resetButton() {
-    this.submitBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
-    this.submitBtn.disabled = false;
-    this.submitBtn.style.background = '';
-  }
-  
-  setupInputValidation() {
-    this.emailInput.addEventListener('input', () => {
-      if (this.isValidEmail(this.emailInput.value)) {
-        this.emailInput.style.borderColor = '#5EA977';
+
+  collectFormData() {
+    const formData = new FormData(this.form);
+    const data = {};
+
+    // Collect regular form fields
+    for (let [key, value] of formData.entries()) {
+      if (data[key]) {
+        // Handle multiple values (checkboxes)
+        if (Array.isArray(data[key])) {
+          data[key].push(value);
+        } else {
+          data[key] = [data[key], value];
+        }
       } else {
-        this.emailInput.style.borderColor = '';
+        data[key] = value;
       }
+    }
+
+    // Collect project types
+    const projectTypes = Array.from(document.querySelectorAll('input[name="projectType"]:checked'))
+      .map(input => input.value);
+    data.projectTypes = projectTypes;
+
+    return data;
+  }
+
+  simulateSubmission(data) {
+    return new Promise((resolve) => {
+      console.log('Submitting booking data:', data);
+      setTimeout(resolve, 2000);
     });
   }
-  
-  isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+
+  showSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 }
 
-// Initialize newsletter form
-document.addEventListener('DOMContentLoaded', () => {
-  new NewsletterForm();
-  
-  // Add smooth scroll for footer links
-  document.querySelectorAll('.footer-links a, .footer-bottom-links a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const href = link.getAttribute('href');
-      if (href.startsWith('#')) {
-        e.preventDefault();
-        const target = document.querySelector(href);
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        }
+// Success modal functions
+function closeSuccessModal() {
+  const modal = document.getElementById('successModal');
+  modal.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('DOM loaded, initializing booking form...');
+
+  // Initialize booking form
+  new BookingFormHandler();
+
+  // Modal event listeners
+  const modal = document.getElementById('successModal');
+  if (modal) {
+    modal.addEventListener('click', function (e) {
+      if (e.target === this) {
+        closeSuccessModal();
+      }
+    });
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('successModal');
+      if (modal && modal.classList.contains('show')) {
+        closeSuccessModal();
+      }
+    }
+  });
+
+  // Button hover effects
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      const arrow = btn.querySelector('.icon-arrow');
+      if (arrow) {
+        arrow.style.transform = 'translateX(6px)';
+      }
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      const arrow = btn.querySelector('.icon-arrow');
+      if (arrow) {
+        arrow.style.transform = 'translateX(0)';
       }
     });
   });
